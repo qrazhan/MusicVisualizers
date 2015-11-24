@@ -1,0 +1,194 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="styles.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function () {
+	  visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
+	  //visualize('https://api.soundcloud.com/tracks/94536406/stream'); // cash cash
+	  //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
+	  //visualize('https://api.soundcloud.com/tracks/220096584/stream');
+	});
+
+	var visualize = function(stream_url){
+		var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		  var audioElement = document.getElementById('audioElement');
+		  var url = stream_url + "?client_id=c88c6550ce70a7d9dd963fbcee344ae5";
+		  audioElement.crossOrigin = "anonymous";
+		  audioElement.src = url;
+		  var audioSrc = audioCtx.createMediaElementSource(audioElement);
+		  var analyser = audioCtx.createAnalyser();
+		  analyser.smoothingTimeConstant = 0.125;
+	      //analyser.fftSize = 256;
+
+		  // Bind our analyser to the media element source.
+		  audioSrc.connect(analyser);
+		  audioSrc.connect(audioCtx.destination);
+
+		  // Create filter
+		  //var filter = audioCtx.createBiquadFilter();
+		  //filter.type = "highshelf";
+
+		  //audioSrc.connect(filter);
+		  //filter.connect(analyser);
+		  //filter.connect(audioCtx.destination);
+
+		  var frequencyData = new Uint8Array(200);
+
+		  var svgHeight = '300';
+		  var svgWidth = '1200';
+		  var barPadding = '1';
+
+		  var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#F1C7C8'];
+		  //var colors = ['#5F464B', '#8E4A49', '#7DAA92', '#80FFEC', '#C2FBEF']
+		  var previousData = new Uint8Array(200);
+		  var prevColorOuter = '#CEF5F4';
+		  var prevColorInner = '#F1C7C8';
+		  var prevColorCircle = '#FBF4AC';
+		  var prevVolume = 0;
+		  // Continuously loop and update chart with frequency data.
+		  function renderChart() {
+		     requestAnimationFrame(renderChart);
+
+		     var changeColorsOuter = false;
+		     var changeColorsInner = false;
+		     var changeColorsCircle = false;
+		     var count = 0;
+		     var volume =0;
+		     var lowvolume = 0;
+		     var highvolume = 0;
+		     var highvolumes = [0,0,0,0];
+		     var lowcount = 0;
+		     var highcount = 0;
+		     // Copy frequency data to frequencyData array.
+		     analyser.getByteFrequencyData(frequencyData);
+		     for(var i=0; i<50; i++){
+		     	if(frequencyData[i] - previousData[i] > 8){
+		     		lowcount+=1;
+		     	}
+		     	lowvolume += frequencyData[i];
+		     }
+		     for(var i=50; i<75; i++){
+		     	if(frequencyData[i] - previousData[i] > 8){
+		     		highcount+=1;
+		     	}
+		     	highvolumes[0] = highvolumes[0] + frequencyData[i];
+		     }
+		     for(var i=75; i<100; i++){
+		     	if(frequencyData[i] - previousData[i] > 8){
+		     		highcount+=1;
+		     	}
+		     	highvolumes[1] = highvolumes[1] + frequencyData[i];
+		     }
+		     for(var i=100; i<150; i++){
+		     	if(frequencyData[i] - previousData[i] > 8){
+		     		highcount+=1;
+		     	}
+		     	highvolumes[2] = highvolumes[2] + frequencyData[i];
+		     }
+		     for(var i=150; i<frequencyData.length; i++){
+		     	if(frequencyData[i] - previousData[i] > 8){
+		     		highcount+=1;
+		     	}
+		     	highvolumes[3] = highvolumes[3] + frequencyData[i];
+		     }
+
+		     count = lowcount + highcount;
+		     highvolume = highvolumes[0]+highvolumes[1]+highvolumes[2]+highvolumes[3];
+		     volume = lowvolume + highvolume;
+
+		     if(count > 5){
+		     	changeColorsInner = true;
+		     }
+
+		     if(highcount > 5){
+		     	changeColorsCircle = true;
+		     }
+
+		     if(volume > prevVolume + 500){
+		     	changeColorsOuter = true;
+		     }
+		     previousData = frequencyData.slice();
+		     prevVolume = volume;
+
+		      var c=document.getElementById("canvasElement1");
+			  var ctx=c.getContext("2d");
+			  var colorOuter = prevColorOuter;
+			  var colorInner = prevColorInner;
+			  var colorCircle = prevColorCircle;
+			  if(changeColorsOuter){
+			  	while(colorOuter == prevColorOuter){
+			  		colorOuter = colors[Math.floor(Math.random()*colors.length)];	
+			  	}
+			  }
+			  if(changeColorsInner){
+			  	while(colorInner == prevColorInner || colorInner == colorOuter){
+			  		colorInner = colors[Math.floor(Math.random()*colors.length)];	
+			  	}
+			  }
+			  if(changeColorsCircle){
+			  	while(colorCircle == prevColorCircle || colorCircle == colorInner){
+			  		colorCircle = colors[Math.floor(Math.random()*colors.length)];	
+			  	}
+			  }
+			  
+			  var size = volume * 450.0 / 25000.0;
+			  var circleSize0 = 25*Math.pow(highvolumes[0] / 2500.0, 2) + 45.0*(highvolumes[0] / 2500.0);
+			  var circleSize1 = 25*Math.pow(highvolumes[1] / 2500.0, 2) + 45.0*(highvolumes[1] / 2500.0);
+			  var circleSize2 = 25*Math.pow(highvolumes[2] / 5000.0, 2) + 45.0*(highvolumes[2] / 5000.0);
+			  var circleSize3 = 25*Math.pow(highvolumes[3] / 5000.0, 2) + 45.0*(highvolumes[3] / 5000.0);
+			  
+			  ctx.fillStyle = colorInner;
+
+			  switch(Math.floor(Math.random()*4)){
+			  	case 0: ctx.fillRect(0,0,size,size); break;
+			  	case 1: ctx.fillRect(800-size,800-size,size,size); break;
+			  	case 2: ctx.fillRect(0,800-size,size,size); break;
+			  	case 3: ctx.fillRect(800-size,0,size,size); break;
+			  }
+			  
+			  	  /*ctx.beginPath();
+				  switch(Math.floor(Math.random()*4)){
+			  		case 0: ctx.arc(200,200,circleSize0,0, Math.PI * 2, false); break;
+			  		case 1: ctx.arc(600,600,circleSize1,0, Math.PI * 2, false); break;
+			  		case 2: ctx.arc(200,600,circleSize2,0, Math.PI * 2, false); break;
+			  		case 3: ctx.arc(600,200,circleSize3,0, Math.PI * 2, false); break;
+			  	  }
+			  	  ctx.closePath();*/
+			  	  //ctx.lineWidth = 5;
+			  	  //ctx.strokeStyle = colorCircle;
+			  	  //ctx.stroke();
+			  	  ctx.fillStyle = colorCircle;
+			  	  ctx.fill();
+			  
+			  document.getElementById("container").style.backgroundColor = colorOuter;
+			  prevColorOuter = colorOuter;
+			  prevColorInner = colorInner;
+		  }
+
+		  // Run the loop
+		  renderChart();
+	}
+
+	var play = function(){
+		document.getElementById('audioElement').play();
+		document.getElementById('play').style.display = "none";
+		document.getElementById('pause').style.display = "block";
+	}
+	var pause = function(){
+		document.getElementById('audioElement').pause();
+		document.getElementById('pause').style.display = "none";
+		document.getElementById('play').style.display = "block";
+	}
+</script>
+</head>
+<body>
+	<div id="container">
+		<audio id="audioElement"></audio>
+		<canvas id="canvasElement1" width="800" height="800"></canvas>
+		<div id="play" class="player_button" onclick="play();"><i class="fa fa-play"></i></div>
+		<div id="pause" class="player_button" onclick="pause();"><i class="fa fa-pause"></i></div>
+	</div>
+</body>
+</html>

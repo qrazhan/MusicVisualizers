@@ -1,0 +1,221 @@
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="styles.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function () {
+	  //visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
+	  //visualize('https://api.soundcloud.com/tracks/94536406/stream'); // cash cash
+	  //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
+	  //visualize('https://api.soundcloud.com/tracks/141415883/stream'); // feel good
+	  //visualize('https://api.soundcloud.com/tracks/160837062/stream'); // gold skies
+	  //visualize('https://api.soundcloud.com/tracks/180512168/stream');
+	  //visualize('https://api.soundcloud.com/tracks/185783624/stream');
+	  //visualize('https://api.soundcloud.com/tracks/208760745/stream'); //forever tonight
+	  //visualize('https://api.soundcloud.com/tracks/152548224/stream'); //moaners
+	  //visualize('https://api.soundcloud.com/tracks/166946757/stream');
+	  visualize('https://api.soundcloud.com/tracks/197628448/stream'); //chet porter
+
+	});
+
+	function shuffle(array) {
+	    var currentIndex = array.length, temporaryValue, randomIndex ;
+
+	    // While there remain elements to shuffle...
+	    while (0 !== currentIndex) {
+		    // Pick a remaining element...
+		    randomIndex = Math.floor(Math.random() * currentIndex);
+		    currentIndex -= 1;
+
+		    // And swap it with the current element.
+		    temporaryValue = array[currentIndex];
+		    array[currentIndex] = array[randomIndex];
+	    	array[randomIndex] = temporaryValue;
+  		} 
+
+  	    return array;
+	}
+
+	/*function create2DArray(arr, sublen){
+		var newArr = [];
+		while(arr.length) newArr.push(arr.splice(0,sublen-1));
+		return newArr;
+	}
+
+	function transpose(a){
+  		return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
+	}
+
+	function reverseRows(arr){
+		for(var i=0; i<arr.length; i++){
+			arr[i].reverse();
+		}
+	}
+
+	function compressTo1D(arr){
+		return arr.join().split(",");
+	}*/
+
+	var visualize = function(stream_url){
+		var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+		  var audioElement = document.getElementById('audioElement');
+		  var url = stream_url + "?client_id=c88c6550ce70a7d9dd963fbcee344ae5";
+		  audioElement.crossOrigin = "anonymous";
+		  audioElement.src = url;
+		  var audioSrc = audioCtx.createMediaElementSource(audioElement);
+		  var analyser = audioCtx.createAnalyser();
+		  //analyser.smoothingTimeConstant = 0.125;
+	      //analyser.fftSize = 256;
+
+		  // Bind our analyser to the media element source.
+		  audioSrc.connect(analyser);
+		  audioSrc.connect(audioCtx.destination);
+
+		  // Create filter
+		  //var filter = audioCtx.createBiquadFilter();
+		  //filter.type = "highshelf";
+
+		  //audioSrc.connect(filter);
+		  //filter.connect(analyser);
+		  //filter.connect(audioCtx.destination);
+
+		  var frequencyData = new Uint8Array(256);
+		  var indices = Array.apply(null, Array(256)).map(function (_, i) {return i;});
+		  shuffle(indices);
+
+		  var svgHeight = '300';
+		  var svgWidth = '1200';
+		  var barPadding = '1';
+
+		  var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#1A3666'];
+		  //var colors = [ '#7DAA92', '#80FFEC', '#C2FBEF', '#5F464B', '#8E4A49']
+		  var previousData = new Uint8Array(256);
+		  //var prevColorOuter = '#CEF5F4';
+		  var prevColorOuter = colors[3];
+		  var prevColorInner = colors[3];
+		  var prevVolume = 0;
+		  var changeCircleColor = new Array(256);
+		  for (var i = 0; i < changeCircleColor.length; ++i) { changeCircleColor[i] = false; }
+		  var circleColors = new Array(256);
+		  for (var i = 0; i < circleColors.length; ++i) { circleColors[i] = colors[0]; }
+
+		  var vert = true;
+		  var horz = true;
+		  // Continuously loop and update chart with frequency data.
+		  function renderChart() {
+		     requestAnimationFrame(renderChart);
+
+		     var changeColorsOuter = false;
+		     var changeColorsInner = false;
+		     var changeColorsCircle = false;
+		     var count = 0;
+		     var volume =0;
+		     // Copy frequency data to frequencyData array.
+		     analyser.getByteFrequencyData(frequencyData);
+		     
+		     for(var i=0; i<frequencyData.length; i++){
+		     	if(frequencyData[i] - previousData[i] > 5){
+		     		count++;
+		     	}
+		     	if(Math.abs(frequencyData[i] - previousData[i]) > 75){
+		     			changeCircleColor[i] = true;
+		     	}
+		  
+		     	volume += frequencyData[i]
+		     }
+
+		     /*if(count > 20){
+		     	changeColorsInner = true;
+		     }
+
+		     if(volume > prevVolume + 500){
+		     	changeColorsOuter = true;
+		     }*/
+		     previousData = frequencyData.slice();
+		     //prevVolume = volume;
+
+		      var c=document.getElementById("canvasElement1");
+			  var ctx=c.getContext("2d");
+			  var colorOuter = prevColorOuter;
+			  var colorInner = prevColorInner;
+			  /*if(changeColorsOuter){
+			  	while(colorOuter == prevColorOuter){
+			  		colorOuter = colors[Math.floor(Math.random()*colors.length)];	
+			  	}
+			  }*/
+			  /*if(changeColorsInner){
+			  	while(colorInner == prevColorInner || colorInner == colorOuter || colorInner == colorCircle){
+			  		colorInner = colors[Math.floor(Math.random()*colors.length)];	
+			  	}
+			  }*/
+			  
+			  ctx.fillStyle = colorInner;
+			  
+			 if(count > 125){ //125
+			 	console.log(count);
+			 	if(count > 175){
+			 		shuffle(indices);
+			 	} else {
+			 		switch(Math.floor(Math.random()*3)){
+			 			case 0: vert = !vert; break;
+			 			case 1: horz = !horz; break;
+			 			case 2: vert = !vert; horz = !horz; break;
+			 		}
+			 	}
+			 	
+			 }
+
+			  ctx.fillRect(0,0,800,800);
+
+			  for(var i=0; i<frequencyData.length; i++){
+			  	ctx.beginPath();
+			  	var x = (i%16)*50+25;
+			  	var y = Math.floor(i/16)*50+25;
+			  	x = horz ? x : c.width - x;
+			  	y = vert ? y : c.height - y;
+			  	//x = horz ? x : x+12.5*Math.pow(-1, i%2);
+			  	//y = vert ? y : y+12.5*Math.pow(-1, i%2);
+			  	ctx.arc(x,y,Math.pow(frequencyData[indices[i]]/100, 3.4),0, Math.PI * 2, false); //3.4
+			  	ctx.closePath();
+			  	if(changeCircleColor[indices[i]]){
+			  		var colorCircle = 0
+			  		while(colorCircle == 0 || colorCircle == circleColors[indices[i]] || colorCircle == colorInner){
+			  			colorCircle = colors[Math.floor(Math.random()*colors.length)];	
+			  		}
+			  		circleColors[indices[i]] = colorCircle;
+			  	}
+			  	ctx.fillStyle = circleColors[indices[i]];
+			  	ctx.fill();
+			  }
+			  
+			  document.getElementById("container").style.backgroundColor = colorOuter;
+			  prevColorOuter = colorOuter;
+			  prevColorInner = colorInner;
+		  }
+
+		  // Run the loop
+		  renderChart();
+	}
+
+	var play = function(){
+		document.getElementById('audioElement').play();
+		document.getElementById('play').style.display = "none";
+		document.getElementById('pause').style.display = "block";
+	}
+	var pause = function(){
+		document.getElementById('audioElement').pause();
+		document.getElementById('pause').style.display = "none";
+		document.getElementById('play').style.display = "block";
+	}
+</script>
+</head>
+<body>
+	<div id="container">
+		<audio id="audioElement"></audio>
+		<canvas id="canvasElement1" width="800" height="800"></canvas>
+		<div id="play" class="player_button" onclick="play();"><i class="fa fa-play"></i></div>
+		<div id="pause" class="player_button" onclick="pause();"><i class="fa fa-pause"></i></div>
+	</div>
+</body>
+</html>
