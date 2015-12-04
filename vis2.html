@@ -12,10 +12,11 @@
 	  //visualize('https://api.soundcloud.com/tracks/160837062/stream'); // gold skies
 	  //visualize('https://api.soundcloud.com/tracks/180512168/stream');
 	  //visualize('https://api.soundcloud.com/tracks/185783624/stream');
-	  //visualize('https://api.soundcloud.com/tracks/208760745/stream'); //forever tonight
+	  visualize('https://api.soundcloud.com/tracks/208760745/stream'); //forever tonight
 	  //visualize('https://api.soundcloud.com/tracks/152548224/stream'); //moaners
 	  //visualize('https://api.soundcloud.com/tracks/166946757/stream');
-	  visualize('https://api.soundcloud.com/tracks/197628448/stream'); //chet porter
+	  //visualize('https://api.soundcloud.com/tracks/197628448/stream'); //chet porter
+	  //visualize('https://api.soundcloud.com/tracks/86360618/stream');
 
 	});
 
@@ -36,26 +37,6 @@
 
   	    return array;
 	}
-
-	/*function create2DArray(arr, sublen){
-		var newArr = [];
-		while(arr.length) newArr.push(arr.splice(0,sublen-1));
-		return newArr;
-	}
-
-	function transpose(a){
-  		return a[0].map(function (_, c) { return a.map(function (r) { return r[c]; }); });
-	}
-
-	function reverseRows(arr){
-		for(var i=0; i<arr.length; i++){
-			arr[i].reverse();
-		}
-	}
-
-	function compressTo1D(arr){
-		return arr.join().split(",");
-	}*/
 
 	var visualize = function(stream_url){
 		var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -88,7 +69,13 @@
 		  var svgWidth = '1200';
 		  var barPadding = '1';
 
-		  var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#1A3666'];
+		  //var bgColors = ['#001848','#301860', '#483078', '#604878', '#906090'];
+		  var bgColors = ['#F1C7C8', '#F1C7C8' ,'#F1C7C8', '#F1C7C8', '#F1C7C8'];
+
+		  //'#F1C7C8'
+		  //var colors = ['#F5F1F0', '#F1E1D2', '#DFCDC9', '#C8A6B4', '#16054A']
+		  //var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#1A3666'];
+		  var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#F1C7C8'];
 		  //var colors = [ '#7DAA92', '#80FFEC', '#C2FBEF', '#5F464B', '#8E4A49']
 		  var previousData = new Uint8Array(256);
 		  //var prevColorOuter = '#CEF5F4';
@@ -102,6 +89,8 @@
 
 		  var vert = true;
 		  var horz = true;
+		  var lastChange = 0;
+		  var maxVol = 0;
 		  // Continuously loop and update chart with frequency data.
 		  function renderChart() {
 		     requestAnimationFrame(renderChart);
@@ -124,13 +113,10 @@
 		  
 		     	volume += frequencyData[i]
 		     }
-
-		     /*if(count > 20){
-		     	changeColorsInner = true;
-		     }
-
-		     if(volume > prevVolume + 500){
-		     	changeColorsOuter = true;
+		     /*console.log(volume);
+		     if(volume > maxVol){
+		     	maxVol = volume;
+		     	console.log("max: "+maxVol);
 		     }*/
 		     previousData = frequencyData.slice();
 		     //prevVolume = volume;
@@ -139,43 +125,55 @@
 			  var ctx=c.getContext("2d");
 			  var colorOuter = prevColorOuter;
 			  var colorInner = prevColorInner;
+			  
 			  /*if(changeColorsOuter){
 			  	while(colorOuter == prevColorOuter){
 			  		colorOuter = colors[Math.floor(Math.random()*colors.length)];	
 			  	}
 			  }*/
-			  /*if(changeColorsInner){
-			  	while(colorInner == prevColorInner || colorInner == colorOuter || colorInner == colorCircle){
-			  		colorInner = colors[Math.floor(Math.random()*colors.length)];	
-			  	}
-			  }*/
 			  
-			  ctx.fillStyle = colorInner;
 			  
+			 
 			 if(count > 125){ //125
-			 	console.log(count);
-			 	if(count > 175){
-			 		shuffle(indices);
-			 	} else {
-			 		switch(Math.floor(Math.random()*3)){
-			 			case 0: vert = !vert; break;
-			 			case 1: horz = !horz; break;
-			 			case 2: vert = !vert; horz = !horz; break;
-			 		}
+			 	//console.log(count);
+			 	if(new Date().getTime() - lastChange > 50){ //50 ms at least between changes
+				 	if(count > 200){
+				 		shuffle(indices);
+				 	} else {
+					 	switch(Math.floor(Math.random()*1)){
+					 		case 2: vert = !vert; break;
+					 		case 1: horz = !horz; break;
+					 		case 0: vert = !vert; horz = !horz; break;
+					 	}
+				 	}
+				 	lastChange = new Date().getTime();
 			 	}
-			 	
 			 }
 
-			  ctx.fillRect(0,0,800,800);
+			 var bgIdx = 0;
+			 var rawIdx = Math.floor(20*volume/50000);
+			 if(rawIdx > 18){
+			 	bgIdx = 4;
+			 } else if(rawIdx > 15){
+			 	bgIdx = 3;
+			 } else if(rawIdx > 10){
+			 	bgIdx = 2;
+			 } else if(rawIdx > 5){
+			 	bgIdx = 1;
+			 }
+			  var bg = bgColors[bgIdx];
+			  document.getElementById("container").style.backgroundColor = bg;
+			  ctx.fillStyle = bg;
+			  ctx.fillRect(0,0,c.width,c.height);
 
 			  for(var i=0; i<frequencyData.length; i++){
 			  	ctx.beginPath();
-			  	var x = (i%16)*50+25;
-			  	var y = Math.floor(i/16)*50+25;
-			  	x = horz ? x : c.width - x;
-			  	y = vert ? y : c.height - y;
-			  	//x = horz ? x : x+12.5*Math.pow(-1, i%2);
-			  	//y = vert ? y : y+12.5*Math.pow(-1, i%2);
+			  	var x = (i%16)*50+50;
+			  	var y = Math.floor(i/16)*50+50;
+			  	//x = horz ? x : c.width - x;
+			  	//y = vert ? y : c.height - y;
+			  	x = horz ? x : x+25*Math.pow(-1, Math.floor(i/16)%2);
+			  	y = vert ? y : y+25*Math.pow(-1, i%2);
 			  	ctx.arc(x,y,Math.pow(frequencyData[indices[i]]/100, 3.4),0, Math.PI * 2, false); //3.4
 			  	ctx.closePath();
 			  	if(changeCircleColor[indices[i]]){
@@ -188,10 +186,6 @@
 			  	ctx.fillStyle = circleColors[indices[i]];
 			  	ctx.fill();
 			  }
-			  
-			  document.getElementById("container").style.backgroundColor = colorOuter;
-			  prevColorOuter = colorOuter;
-			  prevColorInner = colorInner;
 		  }
 
 		  // Run the loop
@@ -213,7 +207,7 @@
 <body>
 	<div id="container">
 		<audio id="audioElement"></audio>
-		<canvas id="canvasElement1" width="800" height="800"></canvas>
+		<canvas id="canvasElement1" width="900" height="900"></canvas>
 		<div id="play" class="player_button" onclick="play();"><i class="fa fa-play"></i></div>
 		<div id="pause" class="player_button" onclick="pause();"><i class="fa fa-pause"></i></div>
 	</div>
