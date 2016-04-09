@@ -6,19 +6,18 @@
 <script type="text/javascript">
 	$(document).ready(function () {
 	  //visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
-	  //visualize('https://api.soundcloud.com/tracks/94536406/stream'); // cash cash
+	  //visualize('https://api.soundcloud.com/tracks/191897518/stream'); // runaway karboncoopy
 	  //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
 	  //visualize('https://api.soundcloud.com/tracks/141415883/stream'); // feel good
-	  visualize('https://api.soundcloud.com/tracks/160837062/stream'); // gold skies
+	  //visualize('https://api.soundcloud.com/tracks/160837062/stream'); // gold skies
 	  //visualize('https://api.soundcloud.com/tracks/180512168/stream');
 	  //visualize('https://api.soundcloud.com/tracks/185783624/stream');
 	  //visualize('https://api.soundcloud.com/tracks/208760745/stream'); //forever tonight
-	  //visualize('https://api.soundcloud.com/tracks/152548224/stream'); //moaners
-	  //visualize('https://api.soundcloud.com/tracks/166946757/stream');
+	  visualize('https://api.soundcloud.com/tracks/152548224/stream'); //moaners
 	  //visualize('https://api.soundcloud.com/tracks/197628448/stream'); //chet porter
-	  //visualize('https://api.soundcloud.com/tracks/86360618/stream');
 	  //visualize('https://api.soundcloud.com/tracks/79694416/stream'); //dearly beloved
 	  //visualize('https://api.soundcloud.com/tracks/243733297/stream');
+	  //visualize('https://api.soundcloud.com/tracks/224412267/stream'); //zedd true colors set
 
 	});
 
@@ -40,6 +39,10 @@
   	    return array;
 	}
 
+	function rgbToHex(r, g, b) {
+    	return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+	}
+
 	var visualize = function(stream_url){
 		var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 		  var audioElement = document.getElementById('audioElement');
@@ -49,7 +52,7 @@
 		  var audioSrc = audioCtx.createMediaElementSource(audioElement);
 		  var analyser = audioCtx.createAnalyser();
 		  //analyser.smoothingTimeConstant = 0.125;
-	      //analyser.fftSize = 256;
+	      analyser.fftSize = 256;
 
 		  // Bind our analyser to the media element source.
 		  audioSrc.connect(analyser);
@@ -72,12 +75,16 @@
 		  var barPadding = '1';
 
 		  //var bgColors = ['#001848','#301860', '#483078', '#604878', '#906090'];
-		  var bgColors = ['#F1C7C8', '#F1C7C8' ,'#F1C7C8', '#F1C7C8', '#F1C7C8'];
-
+		  //var bgColors = ['#F1C7C8', '#F1C7C8' ,'#F1C7C8', '#F1C7C8', '#F1C7C8'];
+		  var bgColorAnchors = ['#001848', '#906090'];
+		  for(var i=0; i<2; i++){
+		  	bgColorAnchors[i] = [parseInt(bgColorAnchors[i].substring(1,3),16),parseInt(bgColorAnchors[i].substring(3,5),16),parseInt(bgColorAnchors[i].substring(5,7),16)]
+		  }
 		  //'#F1C7C8'
 		  //var colors = ['#F5F1F0', '#F1E1D2', '#DFCDC9', '#C8A6B4', '#16054A']
 		  //var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#1A3666'];
-		  var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#F1C7C8'];
+		  //var colors = ['#FBF4AC', '#C1F5B3', '#CEF5F4', '#F1C7C8'];
+		  var colors = ['#FFD300', '#02F4FF', '#FF0095'];
 		  //var colors = [ '#7DAA92', '#80FFEC', '#C2FBEF', '#5F464B', '#8E4A49']
 		  var previousData = new Uint8Array(256);
 		  //var prevColorOuter = '#CEF5F4';
@@ -85,6 +92,7 @@
 		  var prevColorInner = colors[3];
 		  var prevVolume = 0;
 		  var changeCircleColor = new Array(256);
+		  var lastColorChange = new Array(256);
 		  for (var i = 0; i < changeCircleColor.length; ++i) { changeCircleColor[i] = false; }
 		  var circleColors = new Array(256);
 		  for (var i = 0; i < circleColors.length; ++i) { circleColors[i] = colors[0]; }
@@ -99,18 +107,19 @@
 
 		     var changeColorsOuter = false;
 		     var changeColorsInner = false;
-		     var changeColorsCircle = false;
 		     var count = 0;
 		     var volume =0;
 		     // Copy frequency data to frequencyData array.
 		     analyser.getByteFrequencyData(frequencyData);
 		     
 		     for(var i=0; i<frequencyData.length; i++){
-		     	if(frequencyData[i] - previousData[i] > 5){
+		     	if(frequencyData[i] - previousData[i] > 2){
 		     		count++;
 		     	}
-		     	if(Math.abs(frequencyData[i] - previousData[i]) > 75){
+		     	if(Math.abs(frequencyData[i] - previousData[i]) > 2){
 		     			changeCircleColor[i] = true;
+		     	} else {
+		     		changeCircleColor[i] = false;
 		     	}
 		  
 		     	volume += frequencyData[i]
@@ -136,47 +145,44 @@
 			  
 			  
 			 
-			 if(count > 125){ //125
-			 	//console.log(count);
-			 	if(new Date().getTime() - lastChange > 50){ //50 ms at least between changes
-				 	if(count > 200){
+			 	//if(new Date().getTime() - lastChange > 0){ //50 ms at least between changes
+				 	if(count > 25){
 				 		shuffle(indices);
-				 	} else {
-					 	switch(Math.floor(Math.random()*1)){
-					 		case 2: vert = !vert; break;
-					 		case 1: horz = !horz; break;
-					 		case 0: vert = !vert; horz = !horz; break;
-					 	}
 				 	}
-				 	lastChange = new Date().getTime();
-			 	}
-			 }
+				// 	lastChange = new Date().getTime();
+			 	//}
 
-			 var bgIdx = 0;
-			 var rawIdx = Math.floor(20*volume/50000);
-			 if(rawIdx > 18){
-			 	bgIdx = 4;
-			 } else if(rawIdx > 15){
-			 	bgIdx = 3;
-			 } else if(rawIdx > 10){
-			 	bgIdx = 2;
-			 } else if(rawIdx > 5){
-			 	bgIdx = 1;
-			 }
-			  var bg = bgColors[bgIdx];
+			 var rawIdx = 20.0*volume/50000.0;
+			  var gradPercent = Math.min(Math.pow(rawIdx/15.0,10), 1.0);  
+			  var new_r = bgColorAnchors[0][0] + gradPercent*(bgColorAnchors[1][0] = bgColorAnchors[0][0]);
+			  var new_g = bgColorAnchors[0][1] + gradPercent*(bgColorAnchors[1][1] = bgColorAnchors[0][1]);
+			  var new_b = bgColorAnchors[0][2] + gradPercent*(bgColorAnchors[1][2] = bgColorAnchors[0][2]);	
+			  var bg = rgbToHex(Math.floor(new_r), Math.floor(new_g), Math.floor(new_b));
+			  console.log(bg);
 			  document.getElementById("container").style.backgroundColor = bg;
 			  ctx.fillStyle = bg;
 			  ctx.fillRect(0,0,c.width,c.height);
 
 			  for(var i=0; i<frequencyData.length; i++){
+			  	var val = frequencyData[indices[i]];
 			  	ctx.beginPath();
 			  	var x = (i%16)*50+50;
 			  	var y = Math.floor(i/16)*50+50;
-			  	//x = horz ? x : c.width - x;
-			  	//y = vert ? y : c.height - y;
-			  	x = horz ? x : x+25*Math.pow(-1, Math.floor(i/16)%2);
-			  	y = vert ? y : y+25*Math.pow(-1, i%2);
-			  	ctx.arc(x,y,Math.pow(frequencyData[indices[i]]/100, 3.4),0, Math.PI * 2, false); //3.4
+			  	var size = 0;
+			  	if( val > 255){
+			  		size = Math.pow(val/255.0,10) * 175.0;
+			  	}
+			  	else if(val > 250){
+			  		size = Math.pow(val/250.0,10) * 100.0;
+			  	}
+			  	else if(val > 225){
+			  		size = Math.pow(val/225.0,10) * 50.0;
+			  	}
+			  	else if(val > 200){
+			  		size = Math.pow(val/200.0,10) * 10.0;
+			  	}
+			  	ctx.rect(x-size/2.0, y-size/2.0, size, size);
+			  	//ctx.arc(x,y,Math.pow(frequencyData[indices[i]]/100, 3.4),0, Math.PI * 2, false); //3.4
 			  	ctx.closePath();
 			  	if(changeCircleColor[indices[i]]){
 			  		var colorCircle = 0
@@ -187,6 +193,9 @@
 			  	}
 			  	ctx.fillStyle = circleColors[indices[i]];
 			  	ctx.fill();
+			  	/*ctx.lineWidth = "4";
+			  	ctx.strokeStyle = circleColors[indices[i]];
+			  	ctx.stroke();*/
 			  }
 		  }
 
