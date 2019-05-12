@@ -4,22 +4,22 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 <script type="text/javascript">
-	$(document).ready(function () {
-	  //visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
-	  //visualize('https://api.soundcloud.com/tracks/191897518/stream'); // runaway karboncoopy
-	  //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
-	  //visualize('https://api.soundcloud.com/tracks/141415883/stream'); // feel good
-	  //visualize('https://api.soundcloud.com/tracks/160837062/stream'); // gold skies
-	  //visualize('https://api.soundcloud.com/tracks/180512168/stream');
-	  //visualize('https://api.soundcloud.com/tracks/185783624/stream');
-	  //visualize('https://api.soundcloud.com/tracks/208760745/stream'); //forever tonight
-	  visualize('https://api.soundcloud.com/tracks/152548224/stream'); //moaners
-	  //visualize('https://api.soundcloud.com/tracks/197628448/stream'); //chet porter
-	  //visualize('https://api.soundcloud.com/tracks/79694416/stream'); //dearly beloved
-	  //visualize('https://api.soundcloud.com/tracks/243733297/stream');
-	  //visualize('https://api.soundcloud.com/tracks/224412267/stream'); //zedd true colors set
+	// $(document).ready(function () {
+	//   //visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
+	//   //visualize('https://api.soundcloud.com/tracks/191897518/stream'); // runaway karboncoopy
+	//   //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
+	//   //visualize('https://api.soundcloud.com/tracks/141415883/stream'); // feel good
+	//   //visualize('https://api.soundcloud.com/tracks/160837062/stream'); // gold skies
+	//   //visualize('https://api.soundcloud.com/tracks/180512168/stream');
+	//   //visualize('https://api.soundcloud.com/tracks/185783624/stream');
+	//   //visualize('https://api.soundcloud.com/tracks/208760745/stream'); //forever tonight
+	//   visualize('https://api.soundcloud.com/tracks/152548224/stream'); //moaners
+	//   //visualize('https://api.soundcloud.com/tracks/197628448/stream'); //chet porter
+	//   //visualize('https://api.soundcloud.com/tracks/79694416/stream'); //dearly beloved
+	//   //visualize('https://api.soundcloud.com/tracks/243733297/stream');
+	//   //visualize('https://api.soundcloud.com/tracks/224412267/stream'); //zedd true colors set
 
-	});
+	// });
 
 	function shuffle(array) {
 	    var currentIndex = array.length, temporaryValue, randomIndex ;
@@ -46,9 +46,9 @@
 	var visualize = function(stream_url){
 		var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 		  var audioElement = document.getElementById('audioElement');
-		  var url = stream_url + "?client_id=c88c6550ce70a7d9dd963fbcee344ae5";
+		  // var url = stream_url + "?client_id=c88c6550ce70a7d9dd963fbcee344ae5";
 		  audioElement.crossOrigin = "anonymous";
-		  audioElement.src = url;
+		  // audioElement.src = url;
 		  var audioSrc = audioCtx.createMediaElementSource(audioElement);
 		  var analyser = audioCtx.createAnalyser();
 		  //analyser.smoothingTimeConstant = 0.125;
@@ -158,7 +158,7 @@
 			  var new_g = bgColorAnchors[0][1] + gradPercent*(bgColorAnchors[1][1] = bgColorAnchors[0][1]);
 			  var new_b = bgColorAnchors[0][2] + gradPercent*(bgColorAnchors[1][2] = bgColorAnchors[0][2]);	
 			  var bg = rgbToHex(Math.floor(new_r), Math.floor(new_g), Math.floor(new_b));
-			  console.log(bg);
+			  // console.log(bg);
 			  document.getElementById("container").style.backgroundColor = bg;
 			  ctx.fillStyle = bg;
 			  ctx.fillRect(0,0,c.width,c.height);
@@ -204,6 +204,7 @@
 	}
 
 	var play = function(){
+		visualize("")
 		document.getElementById('audioElement').play();
 		document.getElementById('play').style.display = "none";
 		document.getElementById('pause').style.display = "block";
@@ -217,7 +218,9 @@
 </head>
 <body>
 	<div id="container">
-		<audio id="audioElement"></audio>
+		<audio id="audioElement">
+			<source src="porter.mp3" type="audio/mpeg"/>
+		</audio>
 		<canvas id="canvasElement1" width="900" height="900"></canvas>
 		<div id="play" class="player_button" onclick="play();"><i class="fa fa-play"></i></div>
 		<div id="pause" class="player_button" onclick="pause();"><i class="fa fa-pause"></i></div>

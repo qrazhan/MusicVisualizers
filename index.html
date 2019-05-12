@@ -4,19 +4,19 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 <script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
 <script type="text/javascript">
-	$(document).ready(function () {
-	  visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
-	  //visualize('https://api.soundcloud.com/tracks/94536406/stream'); // cash cash
-	  //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
-	  //visualize('https://api.soundcloud.com/tracks/220096584/stream');
-	});
+	// $(document).ready(function () {
+	//   visualize('https://api.soundcloud.com/tracks/221059453/stream'); // slow magic x giraffage - so cute
+	//   //visualize('https://api.soundcloud.com/tracks/94536406/stream'); // cash cash
+	//   //visualize('https://api.soundcloud.com/tracks/208882318/stream'); // galantis
+	//   //visualize('https://api.soundcloud.com/tracks/220096584/stream');
+	// });
 
 	var visualize = function(stream_url){
 		var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 		  var audioElement = document.getElementById('audioElement');
-		  var url = stream_url + "?client_id=c88c6550ce70a7d9dd963fbcee344ae5";
-		  audioElement.crossOrigin = "anonymous";
-		  audioElement.src = url;
+		//   var url = stream_url + "?client_id=c88c6550ce70a7d9dd963fbcee344ae5";
+		//   audioElement.crossOrigin = "anonymous";
+		//   audioElement.src = url;
 		  var audioSrc = audioCtx.createMediaElementSource(audioElement);
 		  var analyser = audioCtx.createAnalyser();
 		  analyser.smoothingTimeConstant = 0.125;
@@ -172,6 +172,7 @@
 	}
 
 	var play = function(){
+		visualize("")
 		document.getElementById('audioElement').play();
 		document.getElementById('play').style.display = "none";
 		document.getElementById('pause').style.display = "block";
@@ -185,8 +186,10 @@
 </head>
 <body>
 	<div id="container">
-		<audio id="audioElement"></audio>
-		<canvas id="canvasElement1" width="800" height="800"></canvas>
+		<audio id="audioElement">
+			<source src="porter.mp3" type="audio/mpeg"/>
+		</audio>
+		<canvas id="canvasElement1" width="900" height="900"></canvas>
 		<div id="play" class="player_button" onclick="play();"><i class="fa fa-play"></i></div>
 		<div id="pause" class="player_button" onclick="pause();"><i class="fa fa-pause"></i></div>
 	</div>
